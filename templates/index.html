@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>CSV Chatbot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container chatbot-container">
+    <h1 class="mb-4 text-center">💬 Chat con tu archivo CSV</h1>
+
+    <form method="POST" enctype="multipart/form-data" class="mb-4">
+        <div class="input-group">
+            <input type="file" name="file" accept=".csv" class="form-control" required>
+            <button class="btn btn-primary" type="submit">Subir CSV</button>
+        </div>
+    </form>
+
+    {% if df is not none %}
+        <div class="card mb-4 shadow">
+            <div class="card-header">📄 Vista previa de los datos</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped m-0">
+                        <thead>
+                        <tr>
+                            {% for col in df.columns %}
+                                <th>{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for row in df.head(5).values.tolist() %}
+                            <tr>
+                                {% for item in row %}
+                                    <td>{{ item }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <form method="POST" class="mb-4">
+        <div class="mb-3">
+            <label for="question" class="form-label">Haz una pregunta sobre los datos</label>
+            <input type="text" name="question" id="question" class="form-control" required placeholder="Ej. ¿Qué columna tiene más valores vacíos?">
+        </div>
+        <button class="btn btn-success" type="submit">Preguntar</button>
+    </form>
+
+    {% if message %}
+        <div class="alert alert-info">{{ message }}</div>
+    {% endif %}
+
+    {% if code_snippet %}
+        <div class="card mb-3">
+            <div class="card-header bg-dark text-white">🔧 Código generado por IA</div>
+            <div class="card-body">
+                <pre><code>{{ code_snippet }}</code></pre>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if response %}
+        <div class="card mb-3">
+            <div class="card-header">💬 Respuesta basada en el código</div>
+            <div class="card-body">
+                <p>{{ response }}</p>
+            </div>
+        </div>
+    {% endif %}
+
+    
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
