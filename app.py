@@ -89,10 +89,15 @@ def index():
                 f = io.StringIO()
                 with contextlib.redirect_stdout(f):
                     try:
-                        exec(code_snippet, {"df": df})
-                        execution_output = f.getvalue()
+                        exec(code_snippet, {"df": df, "pd": pd})  # Asegúrate que pd esté en el contexto
+                        result = f.getvalue()
+                        if not result.strip():
+                            result = "Código ejecutado correctamente, pero no se imprimió ninguna salida."
+                        # Esto es clave:
+                        execution_output = f"<pre>{result}</pre>"
                     except Exception as e:
-                        execution_output = f"Error al ejecutar el código: {e}"
+                        execution_output = f"<pre>Error al ejecutar el código: {e}</pre>"
+
 
             else:
                 message = "Sube un archivo CSV primero."
