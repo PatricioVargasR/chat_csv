@@ -89,7 +89,7 @@ def index():
                 f = io.StringIO()
                 with contextlib.redirect_stdout(f):
                     try:
-                        exec(code_snippet, {"df": df, "pd": pd})  # Asegúrate que pd esté en el contexto
+                        exec(code_snippet, {"df": df, "pd": pd})
                         result = f.getvalue()
                         if not result.strip():
                             result = "Código ejecutado correctamente, pero no se imprimió ninguna salida."
