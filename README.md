@@ -29,20 +29,21 @@ Puedes usar el archivo datos_ejemplos_pokemon.csv ubicado en la raíz del proyec
 ### Capturas de pantalla
 
 1. Subida de archivo CSV e ingreso de preguntas
+![Inicio](./prueba_funcionamiento/prueba1.png)
 2. Visualización del código generado por IA
-
+![Respuesta](./prueba_funcionamiento/prueba2.png)
 ### Estructura del proyecto
 
 ```
-├── app.py                          # Archivo principal que contiene la lógica en Flask
-├── datos_estudiantes.csv          # Archivo de ejemplo para pruebas
+├── app.py                         # Archivo principal que contiene la lógica en Flask
+├── datos_ejemplo_pokemon.csv
 ├── requirements.txt               # Dependencias del proyecto
 ├── static
 │   └── styles.css                 # Estilos personalizados (opcional)
 ├── templates
 │   └── index.html                 # Plantilla HTML de la aplicación
-├── uploads
-│   └── *.csv                      # Carpeta donde se almacenan los archivos cargados
+├── uploads                        # Carpeta donde se almacenan los archivos cargados
+│   └── empleados_200.csv          # Archivo de ejemplo para pruebas
 ├── prueba_funcionamiento
 │   ├── prueba_1.png               # Capturas de funcionamiento
 │   ├── prueba_2.png
