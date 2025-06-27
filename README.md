@@ -1,6 +1,6 @@
 # Chatbot de Análisis de Datos con CSV
 
-Este repositorio contiene el proyecto final de la materia Extracción de Conocimientos en Bases de Datos, donde se desarrolló una aplicación web con Flask que permite al usuario subir un archivo CSV y hacer preguntas directamente sobre sus datos, utilizando inteligencia artificial (Groq + DeepSeek) para interpretar las preguntas y generar código ejecutable en Python (Pandas).
+Este repositorio contiene la segunda versión, optimizada y corregida con IA, de la materia Extracción de Conocimientos en Bases de Datos, donde se desarrolló una aplicación web con Flask que permite al usuario subir un archivo CSV y hacer preguntas directamente sobre sus datos, utilizando inteligencia artificial (Groq + DeepSeek) para interpretar las preguntas y generar código ejecutable en Python (Pandas).
 
 ## Equipo de desarrollo
 
