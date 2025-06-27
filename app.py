@@ -4,6 +4,7 @@ import pandas as pd
 import re
 import io
 import contextlib
+import html  # Import nuevo para escapado HTML
 from groq import Groq
 from dotenv import load_dotenv
 
@@ -15,11 +16,28 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Límite 16MB
 
 # Cliente de Groq
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 df = None  # DataFrame global temporal
+
+# Entorno seguro para exec
+SAFE_GLOBALS = {
+    'pd': pd,
+    'print': print,
+    'len': len,
+    'str': str,
+    'int': int,
+    'float': float,
+    'list': list,
+    'dict': dict,
+    'tuple': tuple,
+    'set': set,
+    'bool': bool,
+    'range': range
+}
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -32,11 +50,14 @@ def index():
         # Manejo de archivo CSV
         if "file" in request.files:
             file = request.files["file"]
-            if file.filename.endswith(".csv"):
+            if file.filename != "" and file.filename.endswith(".csv"):
                 filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
                 file.save(filepath)
-                df = pd.read_csv(filepath)
-                message = f"Archivo '{file.filename}' cargado correctamente."
+                try:
+                    df = pd.read_csv(filepath)
+                    message = f"Archivo '{file.filename}' cargado correctamente."
+                except Exception as e:
+                    message = f"Error leyendo CSV: {str(e)}"
             else:
                 message = "Por favor, sube un archivo CSV válido."
 
@@ -55,13 +76,12 @@ def index():
                         "role": "system",
                         "content": (
                             "Responde preguntas sobre un DataFrame llamado `df` que ya está cargado. "
-                            "No es necesario importar pandas ya que ya está importado, la forma de acceder a el es con `pd`."
-                            "Cuando llegues a la línea que da el resultado, es necario que la des envuelta en un `print()`, para visualizar su resultado"
-                            "Puedes razonar tus pasos antes de dar la solución, pero tu razonamiento debe ir dentro de <think> y </think>. "
-                            "El código final que debe ejecutarse debe ir entre:\n"
-                            "## CODE ##\n<tu código aquí>\n## END CODE ##\n\n"
-                            "No des explicaciones fuera de estas secciones. "
-                            "Asegúrate de que el código entre ## CODE ## sea ejecutable por sí solo y produzca la respuesta deseada."
+                            "No importes pandas. Usa `pd` para operaciones con pandas. "
+                            "Envuelve el resultado final en `print()`. "
+                            "Razonamiento entre <think> y </think>. "
+                            "Código ejecutable entre:\n"
+                            "## CODE ##\n<tu código aquí>\n## END CODE ##\n"
+                            "Solo código ejecutable entre las marcas."
                         )
                     },
                     {
@@ -70,35 +90,44 @@ def index():
                     }
                 ]
 
-                completion = client.chat.completions.create(
-                    model="deepseek-r1-distill-llama-70b",
-                    messages=prompt,
-                    temperature=0,
-                    max_completion_tokens=1024,
-                    top_p=1.0,
-                    stream=False,
-                )
+                try:
+                    completion = client.chat.completions.create(
+                        model="deepseek-r1-distill-llama-70b",
+                        messages=prompt,
+                        temperature=0,
+                        max_tokens=1024,
+                        top_p=1.0,
+                        stream=False,
+                    )
 
-                full_output = completion.choices[0].message.content.strip()
+                    full_output = completion.choices[0].message.content.strip()
 
-                # Extraer bloque entre ## CODE ## y ## END CODE ##
-                code_match = re.search(r"## CODE ##\s*(.*?)\s*## END CODE ##", full_output, re.DOTALL)
-                code_snippet = code_match.group(1).strip() if code_match else "No se encontró código ejecutable."
+                    # Extraer bloque de código
+                    code_match = re.search(
+                        r"## CODE ##\s*(.*?)\s*## END CODE ##",
+                        full_output,
+                        re.DOTALL
+                    )
+                    if code_match:
+                        code_snippet = code_match.group(1).strip()
+                    else:
+                        code_snippet = "No se encontró código ejecutable."
+                        execution_output = "Error: La IA no generó código válido"
 
-                # Ejecutar solo el código extraído
-                f = io.StringIO()
-                with contextlib.redirect_stdout(f):
-                    try:
-                        exec(code_snippet, {"df": df, "pd": pd})
-                        result = f.getvalue()
-                        if not result.strip():
-                            result = "Código ejecutado correctamente, pero no se imprimió ninguna salida."
-                        # Esto es clave:
-                        execution_output = f"<pre>{result}</pre>"
-                    except Exception as e:
-                        execution_output = f"<pre>Error al ejecutar el código: {e}</pre>"
-
-
+                    # Ejecutar solo si se encontró código
+                    if code_match:
+                        f = io.StringIO()
+                        with contextlib.redirect_stdout(f):
+                            try:
+                                # Entorno restringido
+                                local_vars = {'df': df}
+                                exec(code_snippet, SAFE_GLOBALS, local_vars)
+                                result = f.getvalue().strip()
+                                execution_output = html.escape(result) if result else "Código ejecutado sin salida"
+                            except Exception as e:
+                                execution_output = f"Error al ejecutar: {html.escape(str(e))}"
+                except Exception as e:
+                    execution_output = f"Error con Groq API: {html.escape(str(e))}"
             else:
                 message = "Sube un archivo CSV primero."
 
@@ -107,8 +136,8 @@ def index():
         message=message,
         code_snippet=code_snippet,
         response=execution_output,
-        df=df
+        df=df.head(5) if df is not None else None  # Solo enviar muestra
     )
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)  # Debug desactivado en producción
