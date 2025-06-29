@@ -210,6 +210,12 @@ def build_prompt(context, question):
                 "El código final debe ir entre:\n"
                 "## CODE ##\n<tu código aquí>\n## END CODE ##\n\n"
                 "No des explicaciones fuera de estas secciones. "
+                "Responde preguntas sobre un DataFrame llamado `df` que ya está cargado. "
+                "No es necesario importar pandas. "
+                "Cuando llegues a la línea que da el resultado, asigna el resultado a 'result_df'. "
+                "No uses print() para mostrar resultados. "
+                "El código final debe terminar con: result_df = [tu expresión]\n"
+                "## CODE ##\n<tu código aquí>\n## END CODE ##\n\n"
             )
         },
         {
@@ -276,7 +282,46 @@ def execute_code_safely(code_snippet, df):
             # Ejecutar el código
             exec(code_snippet, restricted_env)
             result = f.getvalue()
-            return f"<pre>{result}</pre>"
+
+            # Intentar obtener resultado como objeto pandas
+            result_obj = None
+            if 'result_df' in restricted_env:
+                result_obj = restricted_env['result_df']
+
+            if result_obj is not None:
+                # Convertir diferentes tipos de objetos a DataFrame
+                if isinstance(result_obj, pd.Series):
+                    # Convertir Series a DataFrame
+                    if result_obj.name:
+                        result_df = result_obj.reset_index(name=result_obj.name)
+                    else:
+                        result_df = result_obj.reset_index(name='Value')
+                elif isinstance(result_obj, pd.DataFrame):
+                    result_df = result_obj
+                else:
+                    # Para otros tipos (scalares, listas, etc.)
+                    result_df = pd.DataFrame([str(result_obj)], columns=['Result'])
+
+                # Convertir DataFrame a HTML
+                return result_df.to_html(
+                    classes='table table-striped table-bordered table-sm',
+                    index=False
+                )
+            else:
+                # Detectar si el resultado es una tabla estructurada
+                if "\n" in result and "  " in result:
+                    try:
+                        # Crear un DataFrame desde la salida de texto
+                        from io import StringIO
+                        table_df = pd.read_csv(StringIO(result), sep=r"\s+", engine="python")
+                        return table_df.to_html(
+                            classes='table table-striped table-bordered table-sm',
+                            index=False
+                        )
+                    except Exception:
+                        return f"<pre>{result}</pre>"
+                else:
+                    return f"<pre>{result}</pre>"
         except SyntaxError as e:
             return f"<pre>Error de sintaxis: {str(e)}</pre>"
         except NameError as e:
