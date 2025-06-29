@@ -237,11 +237,15 @@ def execute_code_safely(code_snippet, df):
 
             # Lista blanca principal de métodos pandas
             allowed_pd_attrs = [
-                'DataFrame', 'Series', 'concat', 'merge', 'groupby',
-                'mean', 'sum', 'max', 'min', 'count', 'std', 'unique',
-                'isnull', 'notnull', 'read_csv', 'to_datetime', 'idxmax',
-                'idxmin', 'agg', 'aggregate', 'describe', 'head', 'tail',
-                'sort_values', 'drop', 'fillna', 'value_counts', 'pivot_table'
+                'loc', 'iloc', 'at', 'iat', 'get', 'groupby', 'agg', 'aggregate',
+                'mean', 'sum', 'max', 'min', 'count', 'std', 'var', 'median',
+                'quantile', 'idxmax', 'idxmin', 'unique', 'nunique', 'value_counts',
+                'describe', 'corr', 'cov', 'query', 'filter', 'where', 'mask', 'isin',
+                'between', 'dropna', 'isna', 'notna', 'duplicated', 'sort_values',
+                'sort_index', 'nsmallest', 'nlargest', 'head', 'tail', 'sample',
+                'info', 'memory_usage', 'merge', 'join', 'concat', 'dtypes',
+                'select_dtypes', 'infer_objects', 'to_datetime', 'to_timedelta',
+                'dt', 'rolling', 'expanding', 'ewm'
             ]
 
             # Mecanismo de respaldo para otros métodos
