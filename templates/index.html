@@ -77,7 +77,15 @@
         <div class="card mb-3">
             <div class="card-header">💬 Respuesta basada en el código</div>
             <div class="card-body">
-                <p>{{ response }}</p>
+                {% if response is string and response.startswith('<table') %}
+                    <div class="table-responsive">
+                        {{ response | safe }}
+                    </div>
+                {% else %}
+                    <div class="preformatted-output">
+                        {{ response | safe }}
+                    </div>
+                {% endif %}
             </div>
         </div>
     {% endif %}

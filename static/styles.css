@@ -32,3 +32,21 @@ input[type="text"]::placeholder {
     color: #999;
     font-style: italic;
 }
+
+.preformatted-output pre {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 15px;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table-sm th, .table-sm td {
+    font-size: 0.9rem;
+    padding: 0.3rem;
+}
