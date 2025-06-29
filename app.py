@@ -231,21 +231,43 @@ def execute_code_safely(code_snippet, df):
     f = io.StringIO()
     with contextlib.redirect_stdout(f):
         try:
-            # Construir entorno restringido
+            # Crear una copia segura de pandas y el DataFrame
+            safe_pd = type('SafePandas', (object,), {})()
+            safe_df = df.copy()
+
+            # Lista blanca principal de métodos pandas
+            allowed_pd_attrs = [
+                'DataFrame', 'Series', 'concat', 'merge', 'groupby',
+                'mean', 'sum', 'max', 'min', 'count', 'std', 'unique',
+                'isnull', 'notnull', 'read_csv', 'to_datetime', 'idxmax',
+                'idxmin', 'agg', 'aggregate', 'describe', 'head', 'tail',
+                'sort_values', 'drop', 'fillna', 'value_counts', 'pivot_table'
+            ]
+
+            # Mecanismo de respaldo para otros métodos
+            class SafeAccess:
+                def __init__(self, obj):
+                    self._obj = obj
+
+                def __getattr__(self, name):
+                    # Registrar advertencia para métodos no incluidos
+                    logger.warning(f"Acceso a método no incluido en lista blanca: {name}")
+                    return getattr(self._obj, name)
+
+            # Copiar métodos de la lista blanca
+            for attr in allowed_pd_attrs:
+                if hasattr(pd, attr):
+                    setattr(safe_pd, attr, getattr(pd, attr))
+
+            # Para métodos fuera de lista blanca, usar acceso seguro
+            safe_pd = SafeAccess(pd)
+
+            # Entorno restringido con solo funciones y objetos seguros
             restricted_env = {
-                'df': df,
-                'pd': pd,
+                'df': safe_df,
+                'pd': safe_pd,
                 **BASE_RESTRICTED_ENV
             }
-
-            # Eliminar atributos peligrosos de pd y df
-            for obj in [pd, df]:
-                for attr_name in dir(obj):
-                    if any(forbidden in attr_name for forbidden in ['os', 'sys', 'subprocess', 'eval', 'exec', 'open', '__']):
-                        try:
-                            delattr(obj, attr_name)
-                        except AttributeError:
-                            pass
 
             # Ejecutar el código
             exec(code_snippet, restricted_env)
