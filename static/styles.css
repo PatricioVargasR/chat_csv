@@ -121,8 +121,6 @@ pre, code {
 /* Componentes comunes optimizados */
 .table-responsive {
     overflow-x: auto;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 107, 107, 0.3);
 }
 
 .btn {
@@ -219,4 +217,69 @@ h1 {
     background: rgba(78, 205, 196, 0.15);
     border: 1px solid rgba(78, 205, 196, 0.3);
     color: #C8F4F1;
+}
+div.dataTables_filter label,
+div.dataTables_length label,
+div.dataTables_info {
+  color: #F7F9FC !important;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+div.dataTables_filter input {
+  color: #F7F9FC;
+  background-color: rgba(47, 61, 72, 0.7);
+  border: 1px solid #4ECDC4;
+  border-radius: 50px;
+  padding: 8px 16px;
+  transition: all 0.3s;
+}
+
+div.dataTables_filter input:focus {
+  background-color: rgba(47, 61, 72, 0.9);
+  border-color: #FFE66D;
+  outline: none;
+}
+
+div.dataTables_length select {
+  color: #F7F9FC;
+  background-color: rgba(47, 61, 72, 0.7);
+  border: 1px solid #4ECDC4;
+  border-radius: 50px;
+  padding: 6px 12px;
+}
+
+div.dataTables_length select:focus {
+  background-color: rgba(47, 61, 72, 0.9);
+  border-color: #FFE66D;
+  outline: none;
+}
+
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  color: #F7F9FC !important;
+  border: 1px solid #4ECDC4 !important;
+  border-radius: 50px;
+  margin: 0 3px;
+  padding: 8px 12px;
+  transition: all 0.3s;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+  background: #FFE66D !important;
+  color: #0F1A20 !important;
+  border: 1px solid #FFE66D !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background: #4ECDC4 !important;
+  color: #0F1A20 !important;
+  border: 1px solid #4ECDC4 !important;
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(78, 205, 196, 0.4);
+}
+
+/* Ajustar el tamaño de la información mostrada */
+div.dataTables_info {
+  margin-top: 10px;
 }

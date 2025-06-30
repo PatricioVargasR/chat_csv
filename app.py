@@ -305,7 +305,8 @@ def execute_code_safely(code_snippet, df):
                 # Convertir DataFrame a HTML
                 return result_df.to_html(
                     classes='table table-striped table-bordered table-sm',
-                    index=False
+                    index=False,
+                    table_id="resultTable"
                 )
             else:
                 # Detectar si el resultado es una tabla estructurada
@@ -330,7 +331,7 @@ def execute_code_safely(code_snippet, df):
             return f"<pre>Error de atributo: {str(e)}</pre>"
         except TypeError as e:
             return f"<pre>Error de tipo: {str(e)}</pre>"
-        except pd.errors.PandasError as e:
+        except pd.errors.ParserError as e:
             return f"<pre>Error de pandas: {str(e)}</pre>"
         except Exception as e:
             logger.exception("Error inesperado al ejecutar el código generado")
