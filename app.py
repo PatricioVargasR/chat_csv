@@ -355,4 +355,4 @@ def clean_old_files(max_age=3600):
             logger.error(f"Error del sistema: {str(e)}")
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True, host="0.0.0.0")
