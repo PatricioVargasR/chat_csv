@@ -2,39 +2,50 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>CSV Chatbot</title>
+    <title>CSV Chatbot Seguro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='icon.png')}}" type="image/x-icon">
+    <link rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
 </head>
 <body>
 <div class="container chatbot-container">
     <h1 class="mb-4 text-center">💬 Chat con tu archivo CSV</h1>
+
+    <div class="alert alert-warning">
+        <strong>Nota de seguridad:</strong> El código generado se ejecuta en un entorno restringido.
+    </div>
 
     <form method="POST" enctype="multipart/form-data" class="mb-4">
         <div class="input-group">
             <input type="file" name="file" accept=".csv" class="form-control" required>
             <button class="btn btn-primary" type="submit">Subir CSV</button>
         </div>
+        <div class="form-text">Tamaño máximo: 10MB</div>
     </form>
 
-    {% if df is not none %}
-        <div class="card mb-4 shadow">
+    {% if columns %}
+        <div class="card mb-3">
             <div class="card-header">📄 Vista previa de los datos</div>
-            <div class="card-body p-0">
+            <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-sm table-striped m-0">
+                    <table class="dataframe table table-striped table-bordered table-sm">
                         <thead>
                         <tr>
-                            {% for col in df.columns %}
+                            {% for col in columns %}
                                 <th>{{ col }}</th>
                             {% endfor %}
                         </tr>
                         </thead>
                         <tbody>
-                        {% for row in df.head(5).values.tolist() %}
+                        {% for row in preview %}
                             <tr>
-                                {% for item in row %}
-                                    <td>{{ item }}</td>
+                                {% for col in columns %}
+                                    <td>{{ row[col] }}</td>
                                 {% endfor %}
                             </tr>
                         {% endfor %}
@@ -48,7 +59,9 @@
     <form method="POST" class="mb-4">
         <div class="mb-3">
             <label for="question" class="form-label">Haz una pregunta sobre los datos</label>
-            <input type="text" name="question" id="question" class="form-control" required placeholder="Ej. ¿Qué columna tiene más valores vacíos?">
+            <input type="text" name="question" id="question" class="form-control" required 
+                   placeholder="Ej. ¿Qué columna tiene más valores vacíos?" maxlength="1000">
+            <div class="form-text">Máximo 1000 caracteres</div>
         </div>
         <button class="btn btn-success" type="submit">Preguntar</button>
     </form>
@@ -70,13 +83,27 @@
         <div class="card mb-3">
             <div class="card-header">💬 Respuesta basada en el código</div>
             <div class="card-body">
-                <p>{{ response | safe }}</p>
+                {% if response is string and response.startswith('<table') %}
+                    <div class="table-responsive">
+                        {{ response | safe }}
+                    </div>
+                {% else %}
+                    <div class="preformatted-output">
+                        {{ response | safe }}
+                    </div>
+                {% endif %}
             </div>
         </div>
     {% endif %}
-
-
 </div>
+<script>
+  $(document).ready(function() {
+    $("#resultTable").DataTable({
+      pageLength: 20,
+      lengthMenu: [ [10, 20, 50, -1], [10, 20, 50, "Todo"] ]
+    });
+  });
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.prueba_funcionamiento/
+.env
+*.env
+uploads/
