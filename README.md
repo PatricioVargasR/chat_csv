@@ -59,3 +59,12 @@ Puedes usar el archivo datos_ejemplos_pokemon.csv ubicado en la raíz del proyec
 * DeepSeek R1 Distill Llama 70B como modelo de lenguaje para interpretar preguntas.
 * Bootstrap para diseño web básico (no basado en ningún tema externo).
 
+## Comandos para Docker
+
+ ```
+ docker build -t flask-groq-app .
+ ```
+
+ ```
+ docker run -p 5000:5000 --env-file .env flask-groq-app
+ ```
